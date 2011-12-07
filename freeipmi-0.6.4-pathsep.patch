@@ -1,0 +1,23 @@
+diff -up freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.am.pathsep freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.am
+--- freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.am.pathsep	2008-09-18 00:56:04.000000000 +0200
++++ freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.am	2009-02-24 15:21:56.000000000 +0100
+@@ -78,6 +78,6 @@ force-dependency-check:
+ install-data-hook: $(INSTALL_LOGDIR)
+ 
+ install-logdir:
+-	$(INSTALL) -m 755 -d $(DESTDIR)var/log/ipmiconsole
++	$(INSTALL) -m 755 -d $(DESTDIR)/var/log/ipmiconsole
+ 
+ EXTRA_DIST = ipmiconsole.map
+diff -up freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.in.pathsep freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.in
+--- freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.in.pathsep	2009-01-13 00:08:56.000000000 +0100
++++ freeipmi-0.7.5/ipmiconsole/src/libipmiconsole/Makefile.in	2009-02-24 15:23:46.000000000 +0100
+@@ -670,7 +670,7 @@ force-dependency-check:
+ install-data-hook: $(INSTALL_LOGDIR)
+ 
+ install-logdir:
+-	$(INSTALL) -m 755 -d $(DESTDIR)var/log/ipmiconsole
++	$(INSTALL) -m 755 -d $(DESTDIR)/var/log/ipmiconsole
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:

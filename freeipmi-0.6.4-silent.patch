@@ -1,0 +1,11 @@
+diff -up freeipmi-0.6.4/bmc-watchdog/freeipmi-bmc-watchdog.logrotate.silent freeipmi-0.6.4/bmc-watchdog/freeipmi-bmc-watchdog.logrotate
+--- freeipmi-0.6.4/bmc-watchdog/freeipmi-bmc-watchdog.logrotate.silent	2008-07-28 12:26:29.000000000 +0200
++++ freeipmi-0.6.4/bmc-watchdog/freeipmi-bmc-watchdog.logrotate	2008-07-28 12:26:44.000000000 +0200
+@@ -11,6 +11,6 @@
+   nomail
+   notifempty
+   postrotate
+-      /etc/init.d/freeipmi-bmc-watchdog condrestart
++      /etc/init.d/freeipmi-bmc-watchdog condrestart > /dev/null 2>&1
+   endscript
+ }

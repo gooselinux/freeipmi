@@ -1,0 +1,217 @@
+523177:  Initscript: ipmidetectd incorrect exit codes
+523169:  Initscript: ipmidetectd missing actions
+578172: ipmidetectd fails to start
+
+The init scripts are taken from freeipmi-0.8.x line.
+
+diff -up freeipmi-0.7.16/bmc-watchdog/freeipmi-bmc-watchdog.init.lsb freeipmi-0.7.16/bmc-watchdog/freeipmi-bmc-watchdog.init
+--- freeipmi-0.7.16/bmc-watchdog/freeipmi-bmc-watchdog.init.lsb	2010-03-30 16:19:10.000000000 +0200
++++ freeipmi-0.7.16/bmc-watchdog/freeipmi-bmc-watchdog.init	2009-10-01 20:09:57.000000000 +0200
+@@ -13,11 +13,11 @@
+ ### END INIT INFO
+ 
+ DAEMON=/usr/sbin/bmc-watchdog
+-PIDFILE=/var/run/freeipmi-bmc-watchdog.pid
+-LOCKFILE=/var/lock/subsys/freeipmi-bmc-watchdog
+-CONFFILE=/etc/sysconfig/freeipmi-bmc-watchdog
++PIDFILE=/var/run/bmc-watchdog.pid
++LOCKFILE=/var/lock/subsys/bmc-watchdog
++CONFFILE=/etc/sysconfig/bmc-watchdog
+ 
+-[ -f $DAEMON ] || exit 1
++[ -f $DAEMON ] || exit 5
+ 
+ if [ -r $CONFFILE ]; then
+         . $CONFFILE
+@@ -50,17 +50,18 @@ if [ -f /etc/rc.d/init.d/functions ] ; t
+     }
+     Xstatus() {
+         status bmc-watchdog
+-	RETVAL=$?
++        RETVAL=$?
++        return $RETVAL
+     }
+     Xcondrestart() {
+         if test -e $LOCKFILE; then
+-	    $0 stop
+-	    $0 start
+-   	    RETVAL=$?
++            $0 stop
++            $0 start
++            RETVAL=$?
+         fi
+     }
+     Xexit() {
+-	exit $RETVAL
++        exit $RETVAL
+     }
+ elif [ -f /etc/rc.status ] ; then
+     . /etc/rc.status
+@@ -87,7 +88,7 @@ elif [ -f /etc/rc.status ] ; then
+         rc_status
+     }
+     Xexit() {
+-	rc_exit
++        rc_exit
+     }
+ else
+     echo "Unknown distribution type"
+@@ -98,29 +99,30 @@ RETVAL=0
+ 
+ case "$1" in
+    start)
+-      echo -n "Starting bmc-watchdog: "
+-      Xstart
+-      ;;
++        echo -n "Starting bmc-watchdog: "
++        Xstatus >/dev/null 2>&1 && exit 0
++        Xstart
++        ;;
+ 
+   stop)
+-      echo -n "Shutting down bmc-watchdog: "
+-      Xstop
+-      ;;
+-
+-  restart|reload)
+-   	$0 stop
+-   	$0 start
+-   	RETVAL=$?
+-	;;
++        echo -n "Shutting down bmc-watchdog: "
++        Xstop
++        ;;
++
++  restart)
++        $0 stop
++        $0 start
++        RETVAL=$?
++        ;;
+   status)
+-   	Xstatus
+-	;;
+-  condrestart)
++        Xstatus
++        ;;
++  condrestart|try-restart|force-reload)
+         Xcondrestart
+         ;;
+   *)
+-	echo "Usage: $0 {start|stop|restart|status|condrestart}"
+-	exit 1
++        echo "Usage: $0 {start|stop|restart|status|condrestart|try-restart|force-reload}"
++        exit 2
+ esac
+ 
+ exit $RETVAL
+diff -up freeipmi-0.7.16/ipmidetect/freeipmi-ipmidetectd.init.lsb freeipmi-0.7.16/ipmidetect/freeipmi-ipmidetectd.init
+--- freeipmi-0.7.16/ipmidetect/freeipmi-ipmidetectd.init.lsb	2007-12-14 20:16:25.000000000 +0100
++++ freeipmi-0.7.16/ipmidetect/freeipmi-ipmidetectd.init	2009-10-01 20:09:57.000000000 +0200
+@@ -1,5 +1,5 @@
+ #!/bin/sh
+-# $Id: freeipmi-ipmidetectd.init,v 1.3 2007/12/14 19:16:25 chu11 Exp $
++# $Id: ipmidetectd.init,v 1.1 2009/10/01 18:09:57 chu11 Exp $
+ #
+ # chkconfig: - 70 40
+ # description: ipmidetectd startup script
+@@ -14,8 +14,11 @@
+ ### END INIT INFO
+ 
+ IPMIDETECTD=/usr/sbin/ipmidetectd
++IPMIDETECTD_CONF=/etc/ipmidetectd.conf
++LOCKFILE=/var/lock/subsys/ipmidetectd
+ 
+-[ -f $IPMIDETECTD ] || exit 1
++[ -f $IPMIDETECTD ] || exit 5
++[ -f $IPMIDETECTD_CONF ] || exit 6
+ 
+ # Load Redhat or Suse appropriate libs
+ if [ -f /etc/rc.d/init.d/functions ] ; then
+@@ -24,27 +27,28 @@ if [ -f /etc/rc.d/init.d/functions ] ; t
+         daemon $IPMIDETECTD
+         RETVAL=$?
+         echo
+-        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/freeipmi-ipmidetectd
++        [ $RETVAL -eq 0 ] && touch $LOCKFILE
+     }
+     Xstop() {
+         killproc ipmidetectd -TERM
+         RETVAL=$?
+         echo
+-        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/freeipmi-ipmidetectd
++        [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+     }
+     Xstatus() {
+         status ipmidetectd
+-	RETVAL=$?
++        RETVAL=$?
++        return $RETVAL
+     }
+     Xcondrestart() {
+-        if test -e /var/lock/subsys/freeipmi-ipmidetectd; then
+-	    $0 stop
+-	    $0 start
+-   	    RETVAL=$?
++        if test -e $LOCKFILE; then
++            $0 stop
++            $0 start
++            RETVAL=$?
+         fi
+     }
+     Xexit() {
+-	exit $RETVAL
++        exit $RETVAL
+     }
+ elif [ -f /etc/rc.status ] ; then
+     . /etc/rc.status
+@@ -71,7 +75,7 @@ elif [ -f /etc/rc.status ] ; then
+         rc_status
+     }
+     Xexit() {
+-	rc_exit
++        rc_exit
+     }
+ else
+     echo "Unknown distribution type"
+@@ -82,25 +86,27 @@ RETVAL=0
+ 
+ case "$1" in
+    start)
+-   	echo -n "Starting ipmidetectd: "
++        echo -n "Starting ipmidetectd: "
++        Xstatus >/dev/null 2>&1 && exit 0
+         Xstart
+         ;;
+   stop)
+-   	echo -n "Shutting down ipmidetectd: "
+-	Xstop
+-   	;;
+-  restart|reload)
+-   	$0 stop
+-   	$0 start
+-   	RETVAL=$?
+-   	;;
++        echo -n "Shutting down ipmidetectd: "
++        Xstop
++        ;;
++  restart)
++        $0 stop
++        $0 start
++        RETVAL=$?
++        ;;
+   status)
+         Xstatus
+-   	;;
+-  condrestart)
++        ;;
++  condrestart|try-restart|force-reload)
+         Xcondrestart
+-   	;;
++        ;;
+   *)
+-	echo "Usage: $0 {start|stop|restart|status|condrestart}"
+-	exit 1
++        echo "Usage: $0 {start|stop|restart|status|condrestart|try-restart|force-reload}"
++        exit 2
+ esac
++exit $RETVAL
